@@ -11,10 +11,10 @@ import (
 )
 
 type Entrypoint struct { 
-	processPaymentUseCase usecase.ProcessPaymentUseCaseInterface
+	processPaymentUseCase usecase.SavePaymentUseCaseInterface
 }
 
-func NewEntrypoint(processPaymentUseCase usecase.ProcessPaymentUseCaseInterface) *Entrypoint {
+func NewEntrypoint(processPaymentUseCase usecase.SavePaymentUseCaseInterface) *Entrypoint {
 	return &Entrypoint{
 		processPaymentUseCase: processPaymentUseCase,
 	}

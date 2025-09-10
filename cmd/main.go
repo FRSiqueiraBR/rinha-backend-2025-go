@@ -6,6 +6,7 @@ import (
 	"github.com/FRSiqueiraBR/rinha-backend-2025-go/internal/application/entrypoint/consumer"
 	"github.com/FRSiqueiraBR/rinha-backend-2025-go/internal/application/entrypoint/payment"
 	"github.com/FRSiqueiraBR/rinha-backend-2025-go/internal/application/gateway/event"
+	"github.com/FRSiqueiraBR/rinha-backend-2025-go/internal/application/gateway/http"
 	"github.com/FRSiqueiraBR/rinha-backend-2025-go/internal/domain/payment/usecase"
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
@@ -26,14 +27,17 @@ func main() {
 	}
 
 	// Gateways
-	processPaymentGateway := event.NewProcessPaymentStream(*redisClient)
+	savePaymentGateway := event.NewSavePaymentStream(*redisClient)
+	processorDefaultGateway := http.NewPaymentProcessorDefault()
+	processorFallbackGateway := http.NewPaymentProcessorFallback()
 
 	// Use Cases
-	processPaymentUseCase := usecase.NewProcessPaymentUseCase(processPaymentGateway)
+	savePaymentUseCase := usecase.NewSavePaymentUseCase(savePaymentGateway)
+	processPaymentUseCase := usecase.NewProcessPaymentUseCase(processorDefaultGateway, processorFallbackGateway)
 
 	// Entrypoints
-	paymentEntrypoint := payment.NewEntrypoint(processPaymentUseCase)
-	consumerEntrypoint := consumer.NewConsumer(*redisClient)
+	paymentEntrypoint := payment.NewEntrypoint(savePaymentUseCase)
+	consumerEntrypoint := consumer.NewConsumer(*redisClient, processPaymentUseCase)
 
 	// Start consumer in a goroutine
 	go consumerEntrypoint.Start()

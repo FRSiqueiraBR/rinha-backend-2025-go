@@ -9,28 +9,28 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-type ProcessPaymentStream struct {
+type SavePaymentStream struct {
 	redisClient redis.Client
 }
 
-func NewProcessPaymentStream(redisClient redis.Client) *ProcessPaymentStream {
-	return &ProcessPaymentStream{
+func NewSavePaymentStream(redisClient redis.Client) *SavePaymentStream {
+	return &SavePaymentStream{
 		redisClient: redisClient,
 	}
 }
 
-func (ps *ProcessPaymentStream) Process(payment entity.Payment) error {
+func (ps *SavePaymentStream) Process(payment entity.Payment) error {
 	fmt.Println("Processing payment:", payment)
 
 	err := ps.redisClient.XAdd(context.Background(), &redis.XAddArgs{
 		Stream: "payments",
 		Values: map[string]any{
 			"correlationId": payment.CorrelationId,
-			"amount":        payment.Amount,
+			"amount":        payment.Amount.String(),
 		},
 	}).Err()
 
 	return err
 }
 
-var _ gateway.ProcessPaymentGateway = (*ProcessPaymentStream)(nil)
+var _ gateway.SavePaymentGateway = (*SavePaymentStream)(nil)
