@@ -6,7 +6,7 @@ import (
 	"github.com/FRSiqueiraBR/rinha-backend-2025-go/internal/application/entrypoint/consumer"
 	"github.com/FRSiqueiraBR/rinha-backend-2025-go/internal/application/entrypoint/payment"
 	"github.com/FRSiqueiraBR/rinha-backend-2025-go/internal/application/gateway/event"
-	"github.com/FRSiqueiraBR/rinha-backend-2025-go/internal/application/gateway/http"
+	"github.com/FRSiqueiraBR/rinha-backend-2025-go/internal/application/gateway/http/processor"
 	"github.com/FRSiqueiraBR/rinha-backend-2025-go/internal/domain/payment/usecase"
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
