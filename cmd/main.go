@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 
+	"github.com/FRSiqueiraBR/rinha-backend-2025-go/internal/application/entrypoint/consumer"
 	"github.com/FRSiqueiraBR/rinha-backend-2025-go/internal/application/entrypoint/payment"
 	"github.com/FRSiqueiraBR/rinha-backend-2025-go/internal/application/gateway/event"
 	"github.com/FRSiqueiraBR/rinha-backend-2025-go/internal/domain/payment/usecase"
@@ -19,7 +20,6 @@ func main() {
 		Addr: "localhost:6379",
 	})
 
-
 	_, err := redisClient.Ping(context.Background()).Result()
 	if err != nil {
 		panic(err)
@@ -33,6 +33,10 @@ func main() {
 
 	// Entrypoints
 	paymentEntrypoint := payment.NewEntrypoint(processPaymentUseCase)
+	consumerEntrypoint := consumer.NewConsumer(*redisClient)
+
+	// Start consumer in a goroutine
+	go consumerEntrypoint.Start()
 
 	// Routes
 	r.POST("/payments", paymentEntrypoint.ProcessPayment)
