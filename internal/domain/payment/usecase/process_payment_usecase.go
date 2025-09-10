@@ -1,9 +1,8 @@
 package usecase
 
 import (
-	"fmt"
-
 	"github.com/FRSiqueiraBR/rinha-backend-2025-go/internal/domain/payment/entity"
+	"github.com/FRSiqueiraBR/rinha-backend-2025-go/internal/domain/payment/gateway"
 )
 
 type ProcessPaymentUseCaseInterface interface {
@@ -11,19 +10,19 @@ type ProcessPaymentUseCaseInterface interface {
 }
 
 type ProcessPaymentUseCase struct {
-	// Add necessary fields here
+	gateway gateway.ProcessPaymentGateway
 }
 
-func NewProcessPaymentUseCase() *ProcessPaymentUseCase {
+func NewProcessPaymentUseCase(gateway gateway.ProcessPaymentGateway) *ProcessPaymentUseCase {
 	return &ProcessPaymentUseCase{
-		// Initialize fields here
+		gateway: gateway,
 	}
 }
 
 func (uc *ProcessPaymentUseCase) Execute(payment entity.Payment) error {
 	// Implement the payment processing logic here
 
-	fmt.Println("Processing payment:", payment)
+	uc.gateway.Process(payment)
 
 	return nil
 }
