@@ -28,7 +28,11 @@ func (e *Entrypoint) ProcessPayment(c *gin.Context) {
 	}
 
 	payment := mapper.ToDomain(*req)
-	e.processPaymentUseCase.Execute(payment)
+	err := e.processPaymentUseCase.Execute(payment)
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Failed to process payment: " + err.Error()})
+		return
+	}
 
 	output := entity.PaymentResponse{
 		Message: "Payment processed successfully",

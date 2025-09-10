@@ -1,0 +1,22 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: payment-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    deploy:
+      resources:
+        limits:
+          cpus: "0.15"
+          memory: "86MB"
+    networks:
+      - payment-network
+
+volumes:
+  redis_data:
+
+networks:
+  payment-network:
+    driver: bridge
