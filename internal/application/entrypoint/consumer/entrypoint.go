@@ -74,7 +74,6 @@ func (c *Consumer) Start() {
 					continue
 				}
 
-				fmt.Printf("Processed payment with correlationId: %s, amount: %s\n", correlationId, amountDecimal.String())
 				c.useCase.Execute(correlationId, amountDecimal)
 				// Acknowledge the message
 				c.redisClient.XAck(ctx, streamName, groupName, message.ID)

@@ -2,7 +2,6 @@ package event
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/FRSiqueiraBR/rinha-backend-2025-go/internal/domain/payment/entity"
 	"github.com/FRSiqueiraBR/rinha-backend-2025-go/internal/domain/payment/gateway"
@@ -20,8 +19,6 @@ func NewSavePaymentStream(redisClient redis.Client) *SavePaymentStream {
 }
 
 func (ps *SavePaymentStream) Process(payment entity.Payment) error {
-	fmt.Println("Processing payment:", payment)
-
 	err := ps.redisClient.XAdd(context.Background(), &redis.XAddArgs{
 		Stream: "payments",
 		Values: map[string]any{

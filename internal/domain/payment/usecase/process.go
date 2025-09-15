@@ -1,7 +1,7 @@
 package usecase
 
 import (
-	"fmt"
+	"time"
 
 	"github.com/FRSiqueiraBR/rinha-backend-2025-go/internal/domain/payment/gateway"
 	"github.com/FRSiqueiraBR/rinha-backend-2025-go/internal/domain/payment/helper"
@@ -35,13 +35,13 @@ func (uc *ProcessPaymentUseCase) Execute(correlationId string, amount decimal.De
 		return err
 	}
 
-	if helper.IsHealth(hcDefault) {
-		fmt.Println("Default is health")
-	} else if helper.IsHealth(hcFallback) {
-		fmt.Println("Fallback is health")
-	} else {
-		// TODO: call retry
-	}
+	now := time.Now()
 
-	return nil
+	if helper.IsHealth(hcDefault) {
+		return uc.defaultGateway.Process(correlationId, amount, now)	
+	} else if helper.IsHealth(hcFallback) {
+		return uc.defaultGateway.Process(correlationId, amount, now)
+	} else {
+		return uc.Execute(correlationId, amount)
+	}
 }

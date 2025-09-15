@@ -36,8 +36,8 @@ func main() {
 
 	// Gateways
 	savePaymentGateway := event.NewSavePaymentStream(*redisClient)
-	processorDefaultGateway := processor.NewPaymentProcessorDefault(os.Getenv("HEALTH_CHECK_URL"))
-	processorFallbackGateway := processor.NewPaymentProcessorFallback(os.Getenv("HEALTH_CHECK_URL_FALLBACK"))
+	processorDefaultGateway := processor.NewPaymentProcessorDefault(os.Getenv("PROCESSOR_DEFAULT_HOST"))
+	processorFallbackGateway := processor.NewPaymentProcessorFallback(os.Getenv("PROCESSOR_FALLBACK_HOST"))
 
 	// Use Cases
 	savePaymentUseCase := usecase.NewSavePaymentUseCase(savePaymentGateway)
