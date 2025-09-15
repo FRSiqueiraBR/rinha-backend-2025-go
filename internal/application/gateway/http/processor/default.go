@@ -6,19 +6,20 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/FRSiqueiraBR/rinha-backend-2025-go/internal/application/gateway/http/processor/mapper"
 	appEntity "github.com/FRSiqueiraBR/rinha-backend-2025-go/internal/application/gateway/http/processor/entity"
+	"github.com/FRSiqueiraBR/rinha-backend-2025-go/internal/application/gateway/http/processor/mapper"
 	domainEntity "github.com/FRSiqueiraBR/rinha-backend-2025-go/internal/domain/payment/entity"
 	"github.com/FRSiqueiraBR/rinha-backend-2025-go/internal/domain/payment/gateway"
+	"github.com/FRSiqueiraBR/rinha-backend-2025-go/internal/platform/cache"
 )
 
 type PaymentProcessorDefault struct {
-	// Add necessary dependencies here
+	healthCheckURL string
 }
 
-func NewPaymentProcessorDefault() *PaymentProcessorDefault {
+func NewPaymentProcessorDefault(healthCheckURL string) *PaymentProcessorDefault {
 	return &PaymentProcessorDefault{
-		// Initialize dependencies here
+		healthCheckURL: healthCheckURL,
 	}
 }
 
@@ -28,11 +29,15 @@ func (pp *PaymentProcessorDefault) Process(correlationId string, amount string) 
 }
 
 func (pp *PaymentProcessorDefault) HealthCheck() (domainEntity.HealthCheck, error) {
+	if cached, found := cache.Get("default"); found {
+		return cached, nil
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	// Criando a requisição
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, "http://localhost:8001/payments/service-health", nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, pp.healthCheckURL, nil)
 	if err != nil {
 		return domainEntity.HealthCheck{}, err
 	}
@@ -56,6 +61,8 @@ func (pp *PaymentProcessorDefault) HealthCheck() (domainEntity.HealthCheck, erro
 	}
 
 	modelEntity := mapper.ToDomain(result)
+
+	cache.Set("default", modelEntity)
 
 	return modelEntity, err
 }
