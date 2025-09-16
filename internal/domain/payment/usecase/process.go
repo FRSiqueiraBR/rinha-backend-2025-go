@@ -15,12 +15,17 @@ type ProcessPaymentUseCaseInterface interface {
 type ProcessPaymentUseCase struct {
 	defaultGateway  gateway.PaymentProcessorGatewayInterface
 	fallbackGateway gateway.PaymentProcessorGatewayInterface
+	paymentGateway gateway.PaymentGatewayInterface
 }
 
-func NewProcessPaymentUseCase(defaultGateway gateway.PaymentProcessorGatewayInterface, fallbackGateway gateway.PaymentProcessorGatewayInterface) *ProcessPaymentUseCase {
+func NewProcessPaymentUseCase(
+	defaultGateway gateway.PaymentProcessorGatewayInterface, 
+	fallbackGateway gateway.PaymentProcessorGatewayInterface, 
+	paymentGateway gateway.PaymentGatewayInterface) *ProcessPaymentUseCase {
 	return &ProcessPaymentUseCase{
 		defaultGateway:  defaultGateway,
 		fallbackGateway: fallbackGateway,
+		paymentGateway: paymentGateway,
 	}
 }
 
@@ -38,9 +43,19 @@ func (uc *ProcessPaymentUseCase) Execute(correlationId string, amount decimal.De
 	now := time.Now()
 
 	if helper.IsHealth(hcDefault) {
-		return uc.defaultGateway.Process(correlationId, amount, now)	
+		err := uc.defaultGateway.Process(correlationId, amount, now)
+		if (err != nil) {
+			return err
+		}
+
+		return uc.paymentGateway.Save(correlationId, amount, now, "default")
 	} else if helper.IsHealth(hcFallback) {
-		return uc.defaultGateway.Process(correlationId, amount, now)
+		err := uc.defaultGateway.Process(correlationId, amount, now)
+		if (err != nil) {
+			return err
+		}
+
+		return uc.paymentGateway.Save(correlationId, amount, now, "fallback")
 	} else {
 		return uc.Execute(correlationId, amount)
 	}

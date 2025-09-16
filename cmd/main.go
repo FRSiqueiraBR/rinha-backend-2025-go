@@ -7,8 +7,9 @@ import (
 
 	"github.com/FRSiqueiraBR/rinha-backend-2025-go/internal/application/entrypoint/consumer"
 	"github.com/FRSiqueiraBR/rinha-backend-2025-go/internal/application/entrypoint/payment"
-	"github.com/FRSiqueiraBR/rinha-backend-2025-go/internal/application/gateway/event"
-	processor "github.com/FRSiqueiraBR/rinha-backend-2025-go/internal/application/gateway/http/processor"
+	eventGateway "github.com/FRSiqueiraBR/rinha-backend-2025-go/internal/application/gateway/event"
+	paymentGateway "github.com/FRSiqueiraBR/rinha-backend-2025-go/internal/application/gateway/dataprovider/payment"
+	processorGateway "github.com/FRSiqueiraBR/rinha-backend-2025-go/internal/application/gateway/http/processor"
 	"github.com/FRSiqueiraBR/rinha-backend-2025-go/internal/domain/payment/usecase"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -35,13 +36,14 @@ func main() {
 	}
 
 	// Gateways
-	savePaymentGateway := event.NewSavePaymentStream(*redisClient)
-	processorDefaultGateway := processor.NewPaymentProcessorDefault(os.Getenv("PROCESSOR_DEFAULT_HOST"))
-	processorFallbackGateway := processor.NewPaymentProcessorFallback(os.Getenv("PROCESSOR_FALLBACK_HOST"))
+	savePaymentGateway := eventGateway.NewSavePaymentStream(*redisClient)
+	processorDefaultGateway := processorGateway.NewPaymentProcessorDefault(os.Getenv("PROCESSOR_DEFAULT_HOST"))
+	processorFallbackGateway := processorGateway.NewPaymentProcessorFallback(os.Getenv("PROCESSOR_FALLBACK_HOST"))
+	paymentGateway := paymentGateway.NewPaymentRedis()
 
 	// Use Cases
 	savePaymentUseCase := usecase.NewSavePaymentUseCase(savePaymentGateway)
-	processPaymentUseCase := usecase.NewProcessPaymentUseCase(processorDefaultGateway, processorFallbackGateway)
+	processPaymentUseCase := usecase.NewProcessPaymentUseCase(processorDefaultGateway, processorFallbackGateway, paymentGateway)
 
 	// Entrypoints
 	paymentEntrypoint := payment.NewEntrypoint(savePaymentUseCase)

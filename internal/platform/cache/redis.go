@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/go-redis/redis/v8"
 	domainEntity "github.com/FRSiqueiraBR/rinha-backend-2025-go/internal/domain/payment/entity"
+	"github.com/go-redis/redis/v8"
 )
 
 var (
@@ -40,10 +40,14 @@ func Get(key string) (domainEntity.HealthCheck, bool) {
 }
 
 func Set(key string, healthCheck domainEntity.HealthCheck) {
-	json, err := json.Marshal(healthCheck)
+	jsonData, err := json.Marshal(healthCheck)
 	if err != nil {
 		return
 	}
 
-	rdb.Set(ctx, key, json, 10*time.Second).Result()
+	rdb.Set(ctx, key, jsonData, 10*time.Second).Result()
+}
+
+func GetRDB() *redis.Client {
+	return rdb
 }
